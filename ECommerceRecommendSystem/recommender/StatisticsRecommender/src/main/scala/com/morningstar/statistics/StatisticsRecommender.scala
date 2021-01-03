@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2021-2021, GaryMK  All Rights Reserved.
+ * ProjectName:  ECommerceRecommendSystem
+ * FileName:  StatisticsRecommender.scala
+ * Author:  GaryMK
+ * Date:  2021/1/3 下午3:53
+ * Version:  1.0
+ * LastModified:  2021/1/3 下午2:46
+ *
+ */
+
 package com.morningstar.statistics
 
 import org.apache.spark.SparkConf
@@ -9,7 +20,7 @@ import java.util.Date
 /**
  * @author: GaryMK
  * @EMAIL: chenxingmk@gmail.com
- * @Date: 2021/1/3$ 8:52
+ * @Date: 2021/1/3 8:52
  * @Description:
  */
 

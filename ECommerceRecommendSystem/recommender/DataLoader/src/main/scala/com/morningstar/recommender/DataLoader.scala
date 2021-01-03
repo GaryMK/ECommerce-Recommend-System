@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021-$year, GaryMK  All Rights Reserved.
+ * Copyright (c) 2021-2021, GaryMK  All Rights Reserved.
  * ProjectName:  ECommerceRecommendSystem
  * FileName:  DataLoader.scala
  * Author:  GaryMK
- * Date:  2021/1/2 下午4:15
+ * Date:  2021/1/3 下午3:53
  * Version:  1.0
- * LastModified:  2021/1/2 下午4:15
+ * LastModified:  2021/1/3 下午2:46
+ *
  */
 
 package com.morningstar.recommender
