@@ -23,6 +23,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>DataLoader</module>
+        <module>StatisticsRecommender</module>
     </modules>
 
     <properties>
