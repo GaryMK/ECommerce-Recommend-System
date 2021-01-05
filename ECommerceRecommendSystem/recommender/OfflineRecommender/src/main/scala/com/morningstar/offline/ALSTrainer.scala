@@ -29,7 +29,7 @@ object ALSTrainer {
     // 定义配置
     val config = Map(
       "spark.cores" -> "local[*]",
-      "mongo.uri" -> "mongodb://localhost:27017/recommender",
+      "mongo.uri" -> "mongodb://152.136.152.53:27017/recommender",
       "mongo.db" -> "recommender"
     )
 
