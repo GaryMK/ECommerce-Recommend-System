@@ -13,6 +13,7 @@ package com.morningstar.content
 
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer}
+import org.apache.spark.ml.linalg.SparseVector
 import org.apache.spark.sql.SparkSession
 import org.jblas.DoubleMatrix
 
@@ -75,7 +76,7 @@ object ContentRecommender {
 
     // 2.定义一个HashingTF工具，计算频次
     // TODO:哈希能涵盖所有词就行
-    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures")//.setNumFeatures(500)
+    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(800)
     val featurizedDataDF = hashingTF.transform(wordsDataDF)
     featurizedDataDF.show(truncate = false)
 
@@ -86,6 +87,15 @@ object ContentRecommender {
     // 得到增加新列features的DF
     val rescaledDataDF = idfModel.transform(featurizedDataDF)
     rescaledDataDF.show(truncate = false)
+
+    // 对数据进行转换，得到RDD形式的features
+    val productFeatures = rescaledDataDF.map{
+      row => (row.getAs[Int]("productId"), row.getAs[SparseVector]("features").toArray)
+    }
+      .rdd
+      .map{
+        case (productId, features) => (productId, new DoubleMatrix(features))
+      }
 
     // 两两配对商品，计算余弦相似度
     val productRecs = productFeatures.cartesian(productFeatures)
@@ -102,7 +112,7 @@ object ContentRecommender {
       .groupByKey()
       .map {
         case (productId, recs) =>
-          UserRecs(productId, recs.toList.sortWith(_._2 > _._2).map(x => Recommendation(x._1, x._2)))
+          ProductRecs(productId, recs.toList.sortWith(_._2 > _._2).map(x => Recommendation(x._1, x._2)))
       }
       .toDF()
     productRecs.write
