@@ -40,7 +40,7 @@ object StatisticsRecommender {
   def main(args: Array[String]): Unit = {
     var config = Map(
       "spark.cores" -> "local[*]",
-      "mongo.uri" -> "mongodb://localhost:2701/recommender",
+      "mongo.uri" -> "mongodb://152.136.152.53:27017/recommender",
       "mongo.db" -> "recommender"
     )
 
@@ -72,15 +72,18 @@ object StatisticsRecommender {
 
     // 2.近期热门商品，把时间戳转换成yyyyMM格式进行评分个数统计,最终得到productId，count，yearmonth
     // 创建一个日期格式化工具
+
     val simpleDateFormat = new SimpleDateFormat("yyyyMM")
     // 注册UDF，将timestamp转换为年月格式yyyyMM
     spark.udf.register("changeDate", (x: Int) => simpleDateFormat.format(new Date(x * 1000L)).toInt)
+
     // 把原始rating数据转换成想要的结构 productId，score，yearmonth
     val ratingOfYearMonthDF = spark.sql("select productId, score, changeDate(timestamp) as yearmonth from ratings")
     ratingOfYearMonthDF.createOrReplaceTempView("ratingOfMonth")
-    val rateMoreRecentlyProductsDF = spark.sql("select productId，count(productId) as count, yearmonth from ratingOfMonth group by yearmonth, productId order by yearmonth desc, count desc")
+    // 先按每个月group by，再对每个月内的数据进行count
+    val rateMoreRecentlyProductsDF = spark.sql("select productId, count(productId) as count, yearmonth from ratingOfMonth group by yearmonth, productId order by yearmonth desc, count desc")
     // 把df保存到mongodb
-    storeDFInMongoDB(rateMoreProductsDF, RATE_MORE_RECENTLY_PRODUCTS)
+    storeDFInMongoDB(rateMoreRecentlyProductsDF, RATE_MORE_RECENTLY_PRODUCTS)
 
     // 3.优质商品统计，商品的平均分
     val averageProductsDf = spark.sql("select productId, avg(score) as avg from ratings group by productId order by avg desc")
