@@ -111,7 +111,7 @@ object OfflineRecommender {
     // 两两配对商品，计算余弦相似度
     val productRecs = productFeatures.cartesian(productFeatures)
       .filter{
-        case (a, b) => a._1 != b._2
+        case (a, b) => a._1 != b._1
       }
     // 计算余弦相似度
       .map{
@@ -123,7 +123,7 @@ object OfflineRecommender {
       .groupByKey()
       .map {
         case (productId, recs) =>
-          UserRecs(productId, recs.toList.sortWith(_._2 > _._2).map(x => Recommendation(x._1, x._2)))
+          ProductRecs(productId, recs.toList.sortWith(_._2 > _._2).map(x => Recommendation(x._1, x._2)))
       }
       .toDF()
     productRecs.write
