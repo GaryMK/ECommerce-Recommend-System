@@ -31,8 +31,8 @@ import redis.clients.jedis.Jedis
 // 定义一个连接助手对象，建立到redis和mongodb的连接
 object ConnHelper extends Serializable {
   // 懒变量定义，使用的时候才初始化
-  lazy val jedis = new Jedis("localhost")
-  lazy val mongoClient = MongoClient(MongoClientURI("mongodb://localhost:27017/recommender"))
+  lazy val jedis = new Jedis("152.136.152.53")
+  lazy val mongoClient = MongoClient(MongoClientURI("mongodb://152.136.152.53:27017/recommender"))
 }
 
 case class MongoConfig(uri:String, db:String)
@@ -64,6 +64,7 @@ object OnlineRecommender {
     // 创建spark conf
     val sparkConf = new SparkConf().setMaster(config("spark.cores")).setAppName("OnlineRecommender")
     val spark = SparkSession.builder().config(sparkConf).getOrCreate()
+    // TODO: StreamingContext
     val sc = spark.sparkContext
     val ssc = new StreamingContext(sc, Seconds(2))
 
@@ -90,7 +91,7 @@ object OnlineRecommender {
 
     // 创建kafka配置参数
     val kafkaPara = Map(
-      "bootstrap.servers" -> "localhost:9092",
+      "bootstrap.servers" -> "152.136.152.53:9092",
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
       "group.id" -> "recommender",
@@ -103,12 +104,14 @@ object OnlineRecommender {
       ConsumerStrategies.Subscribe[String, String](Array(config("kafka.topic")), kafkaPara)
     )
 
+    //TODO:数据来源
     // 对kafkaStream进行处理，产生评分流，userId|productId|score|timestamp
     val ratingStream = kafkaStream.map{msg =>
       var attr = msg.value().split("\\|")
       (attr(0).toInt, attr(1).toInt, attr(2).toDouble, attr(3).toInt)
     }
 
+    //TODO: 外层foreach的时间间隔多少
     // 核心算法部分，定义评分流的处理流程
     ratingStream.foreachRDD{
       rdds => rdds.foreach{
@@ -163,7 +166,8 @@ object OnlineRecommender {
     val ratingCollection = ConnHelper.mongoClient( mongoConfig.db)(MONGODB_RATING_COLLECTION)
     val ratingExist = ratingCollection.find(MongoDBObject("userId" -> userId))
       .toArray
-      .map{item =>  // 只需要productId
+      .map{item =>
+        // 只需要productId
         item.get("productId").toString.toInt
       }
     // 从所有的相似商品中进行过滤
@@ -184,6 +188,7 @@ object OnlineRecommender {
     val increMap = scala.collection.mutable.HashMap[Int, Int]()
     val decreMap = scala.collection.mutable.HashMap[Int, Int]()
 
+    // TODO: 遍历双循环
     // 遍历每个备选商品，计算和已评分商品的相似度
     for(candidateProduct <- candidateProducts; userRecentlyRating <- userRecentlyRatings){
       // 从相似度矩阵中获取当前备选商品和当前已评分的、商品间的相似度
@@ -199,6 +204,7 @@ object OnlineRecommender {
       }
     }
 
+    // TODO: scoreList
     // 根据公式计算所有的推荐优先级，首先以productId做groupBy
     scores.groupBy(_._1).map{
       case (productId, scoreList) =>
