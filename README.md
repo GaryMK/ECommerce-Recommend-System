@@ -3,7 +3,7 @@ typora-root-url: README
 ---
 
 # ECommerce-Recommend-System
-ECommerce Recommend System
+大数据电商推荐系统
 
 ## 算法笔记
 
