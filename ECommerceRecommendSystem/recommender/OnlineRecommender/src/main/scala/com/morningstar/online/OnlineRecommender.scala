@@ -31,8 +31,8 @@ import redis.clients.jedis.Jedis
 // 定义一个连接助手对象，建立到redis和mongodb的连接
 object ConnHelper extends Serializable {
   // 懒变量定义，使用的时候才初始化
-  lazy val jedis = new Jedis("152.136.152.53")
-  lazy val mongoClient = MongoClient(MongoClientURI("mongodb://152.136.152.53:27017/recommender"))
+  lazy val jedis = new Jedis("localhost")
+  lazy val mongoClient = MongoClient(MongoClientURI("mongodb://localhost:27017/recommender"))
 }
 
 case class MongoConfig(uri:String, db:String)
@@ -57,7 +57,7 @@ object OnlineRecommender {
     // 定义配置
     val config = Map(
       "spark.cores" -> "local[*]",
-      "mongo.uri" -> "mongodb://152.136.152.53:27017/recommender",
+      "mongo.uri" -> "mongodb://localhost:27017/recommender",
       "mongo.db" -> "recommender",
       "kafka.topic" -> "recommender"
     )
@@ -91,7 +91,7 @@ object OnlineRecommender {
 
     // 创建kafka配置参数
     val kafkaPara = Map(
-      "bootstrap.servers" -> "152.136.152.53:9092",
+      "bootstrap.servers" -> "localhost:9092",
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
       "group.id" -> "recommender",

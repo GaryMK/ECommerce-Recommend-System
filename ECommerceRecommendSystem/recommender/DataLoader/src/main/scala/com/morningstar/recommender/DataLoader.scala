@@ -68,7 +68,7 @@ object DataLoader {
   def main(args: Array[String]): Unit = {
     var config = Map(
       "spark.cores" -> "local[*]",
-      "mongo.uri" -> "mongodb://152.136.152.53:27017/recommender",
+      "mongo.uri" -> "mongodb://localhost:27017/recommender",
       "mongo.db" -> "recommender"
     )
 
